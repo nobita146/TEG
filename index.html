@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thermoelectricity — A Study in Heat and Charge</title>
+<meta name="description" content="A detailed study of thermoelectricity: the Seebeck, Peltier, and Thomson effects, thermoelectric materials, generators, and applications.">
+<link rel='preconnect' href='https://fonts.googleapis.com'>
+<link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+<link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;500i&family=Inter:wght@200;300;400&family=Fira+Code:wght@400;500&display=swap'>
+<script src='https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/lenis@1.3.13/dist/lenis.min.js'></script>
+
+<style>
+:root {
+  --bg: #0a0a0a;
+  --bg-elev: #0f0f0f;
+  --text: #ffffff;
+  --text-soft: #dadada;
+  --text-mute: #8a8a8a;
+  --accent: rgba(200,170,130, 1);
+  --accent-soft: rgba(200,170,130, 0.25);
+  --accent-glow: rgba(200,170,130, 0.08);
+  --line: rgba(255,255,255,0.10);
+  --line-soft: rgba(255,255,255,0.06);
+  --ease-quiet: cubic-bezier(.22, 1, .36, 1);
+  --ease-precise: cubic-bezier(.4, 0, .2, 1);
+  --ease-emphasis: cubic-bezier(.16, 1, .3, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { -webkit-font-smoothing: antialiased; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.8;
+  overflow-x: hidden;
+}
+
+::selection { background: var(--accent-soft); color: var(--text); }
+
+/* ───── Noise overlay ───── */
+.noise-overlay {
+  position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+  animation: noise 20s linear infinite;
+  mix-blend-mode: overlay;
+}
+@keyframes noise {
+  0%,100% { transform: translate(0,0); }
+  20%     { transform: translate(-10%, 5%); }
+  50%     { transform: translate(-10%, 5%); }
+  80%     { transform: translate(-15%, 0); }
+}
+
+/* ───── Typography ───── */
+h1, h2, h3, h4 {
+  font-family: 'EB Garamond', serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.mono {
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 600ms var(--ease-quiet), transform 600ms var(--ease-quiet);
+}
+.eyebrow::after {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 1px;
+  margin-left: 0.85rem;
+  background: currentColor;
+  transition: width 800ms var(--ease-quiet) 400ms;
+}
+.is-in .eyebrow { opacity: 1; transform: none; transition-delay: 100ms; }
+.is-in .eyebrow::after { width: 2.5rem; }
+
+/* ───── Navigation ───── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to bottom, rgba(10,10,10,0.85), rgba(10,10,10,0));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.nav__brand {
+  font-family: 'EB Garamond', serif;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+.nav__brand span { color: var(--accent); }
+.nav__meta {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.nav__links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+.nav__links a {
+  color: var(--text-soft);
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  transition: color 300ms var(--ease-quiet);
+}
+.nav__links a:hover { color: var(--accent); }
+@media (max-width: 768px) {
+  .nav__links { display: none; }
+  .nav__meta { display: none; }
+}
+
+/* ───── Hero ───── */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  padding: 8rem 2rem 5rem;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+.hero__image-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hero__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.12);
+  opacity: 0;
+  filter: blur(12px) grayscale(0.6) brightness(0.55) sepia(0.15);
+  will-change: transform, filter, opacity;
+}
+.hero__veil {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 50%, rgba(10,10,10,0.4) 0%, rgba(10,10,10,0.85) 60%, rgba(10,10,10,0.98) 100%),
+    linear-gradient(to bottom, rgba(10,10,10,0.4) 0%, rgba(10,10,10,0.2) 40%, rgba(10,10,10,0.95) 100%);
+  z-index: 1;
+}
+.hero__content {
+  position: relative;
+  z-index: 2;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+.hero__eyebrow {
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 2rem;
+  opacity: 0;
+  transform: translateY(-20px);
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+}
+.hero__eyebrow::before {
+  content: '';
+  width: 2.5rem;
+  height: 1px;
+  background: var(--accent);
+}
+.hero__title {
+  font-size: clamp(3rem, 8vw, 7.5rem);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+  margin-bottom: 2rem;
+  max-width: 14ch;
+  opacity: 0;
+  transform: translateY(40px);
+}
+.hero__title em {
+  font-style: italic;
+  color: var(--accent);
+  font-weight: 500;
+}
+.hero__sub {
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  line-height: 1.7;
+  color: var(--text-soft);
+  max-width: 60ch;
+  margin-bottom: 3rem;
+  font-weight: 300;
+  opacity: 0;
+  transform: translateY(20px);
+}
+.hero__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-decoration: none;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+  transition: border-color 400ms var(--ease-quiet), color 400ms var(--ease-quiet);
+  opacity: 0;
+  transform: translateY(16px);
+}
+.hero__cta:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.hero__cta-arrow {
+  display: inline-block;
+  transition: transform 400ms var(--ease-quiet);
+}
+.hero__cta:hover .hero__cta-arrow { transform: translateX(6px); }
+
+.hero__corner {
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 2;
+  text-align: right;
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--text-mute);
+  line-height: 1.8;
+  opacity: 0;
+}
+.hero__corner span { color: var(--accent); }
+
+/* ───── Section base ───── */
+.section {
+  padding: 8rem 2rem;
+  position: relative;
+}
+.section__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.section__head {
+  margin-bottom: 5rem;
+  max-width: 860px;
+}
+.section__num {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  color: var(--text-mute);
+  margin-bottom: 1.5rem;
+  display: block;
+}
+.section__title {
+  font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+.section__title em {
+  font-style: italic;
+  color: var(--accent);
+}
+.section__lede {
+  font-size: 1.05rem;
+  color: var(--text-soft);
+  line-height: 1.8;
+  max-width: 65ch;
+}
+
+/* ───── Sticky two-column ───── */
+.sticky-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: start;
+}
+.sticky-pair__left {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 0;
+}
+.sticky-pair__right {
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+@media (max-width: 900px) {
+  .sticky-pair { grid-template-columns: 1fr; gap: 3rem; }
+  .sticky-pair__left { position: static; height: auto; padding: 0; }
+  .sticky-pair__right { gap: 3rem; }
+}
+
+/* ───── Figure ───── */
+.figure {
+  position: relative;
+}
+.figure__frame {
+  position: relative;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.figure__img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: grayscale(0.45) brightness(0.85) sepia(0.12) contrast(1.05);
+  transition: filter 1000ms var(--ease-quiet);
+}
+.figure:hover .figure__img {
+  filter: grayscale(0) brightness(1) sepia(0) contrast(1);
+}
+.figure__caption {
+  margin-top: 1.25rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  display: flex;
+  gap: 1rem;
+  line-height: 1.6;
+}
+.figure__caption span:first-child { color: var(--accent); flex-shrink: 0; }
+
+/* ───── SVG diagram block ───── */
+.diagram {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  padding: 3rem 2rem;
+  position: relative;
+}
+.diagram svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.diagram__label {
+  margin-top: 1.5rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-mute);
+  display: flex;
+  gap: 1rem;
+}
+.diagram__label span:first-child { color: var(--accent); }
+
+/* SVG diagram element styles */
+.diag-text {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  fill: var(--text-soft);
+  letter-spacing: 0.08em;
+}
+.diag-text-accent {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  fill: var(--accent);
+  letter-spacing: 0.08em;
+}
+.diag-title {
+  font-family: 'EB Garamond', serif;
+  font-size: 14px;
+  fill: var(--text);
+  font-style: italic;
+}
+.diag-line {
+  stroke: var(--text-soft);
+  stroke-width: 1.5;
+  fill: none;
+}
+.diag-line-accent {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  fill: none;
+}
+.diag-fill-soft { fill: rgba(255,255,255,0.04); }
+.diag-fill-accent { fill: var(--accent-glow); }
+
+/* ───── Prose blocks ───── */
+.prose {
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: var(--text-soft);
+}
+.prose p { margin-bottom: 1.5rem; }
+.prose p:last-child { margin-bottom: 0; }
+.prose strong {
+  color: var(--text);
+  font-weight: 500;
+}
+.prose em {
+  color: var(--accent);
+  font-style: italic;
+}
+
+.prose-block {
+  max-width: 56ch;
+}
+.prose-block h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+.prose-block .meta {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* ───── Equation ───── */
+.equation {
+  font-family: 'EB Garamond', serif;
+  font-size: 1.75rem;
+  font-style: italic;
+  text-align: center;
+  padding: 2.5rem 2rem;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  margin: 2rem 0;
+  letter-spacing: 0.02em;
+}
+.equation__where {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-style: normal;
+  color: var(--text-mute);
+  margin-top: 1.5rem;
+  letter-spacing: 0.02em;
+  text-align: left;
+  line-height: 1.9;
+  font-weight: 300;
+}
+.equation__where strong {
+  color: var(--accent);
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+
+/* ───── Materials list ───── */
+.materials {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+.material {
+  background: var(--bg);
+  padding: 2.5rem 2rem;
+  position: relative;
+  transition: background 400ms var(--ease-quiet);
+}
+.material:hover { background: var(--bg-elev); }
+.material__formula {
+  font-family: 'EB Garamond', serif;
+  font-size: 1.75rem;
+  font-style: italic;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.material__name {
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  font-weight: 400;
+}
+.material__range {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text-mute);
+  margin-bottom: 1rem;
+}
+.material__desc {
+  font-size: 0.9rem;
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+@media (max-width: 700px) {
+  .materials { grid-template-columns: 1fr; }
+}
+
+/* ───── Application rows ───── */
+.app-list {
+  border-top: 1px solid var(--line);
+}
+.app-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr 100px;
+  gap: 3rem;
+  padding: 2.5rem 0;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  cursor: default;
+}
+.app-row::before {
+  content: '';
+  position: absolute;
+  left: -2rem;
+  top: 0;
+  width: 2px;
+  height: 0;
+  background: var(--accent);
+  transition: height 600ms var(--ease-quiet);
+}
+.app-row:hover::before { height: 100%; }
+.app-row__num {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--text-mute);
+  padding-top: 0.4rem;
+  transition: color 400ms var(--ease-quiet);
+}
+.app-row:hover .app-row__num { color: var(--accent); }
+.app-row__title {
+  font-family: 'EB Garamond', serif;
+  font-size: 1.4rem;
+  color: var(--text);
+  transition: color 400ms var(--ease-quiet);
+}
+.app-row:hover .app-row__title { color: var(--accent); }
+.app-row__desc {
+  font-size: 0.92rem;
+  color: var(--text-soft);
+  line-height: 1.7;
+  opacity: 0.55;
+  transition: opacity 400ms var(--ease-quiet);
+}
+.app-row:hover .app-row__desc { opacity: 1; }
+.app-row__tag {
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  text-align: right;
+  padding-top: 0.4rem;
+}
+@media (max-width: 900px) {
+  .app-row { grid-template-columns: 60px 1fr; gap: 1.5rem; }
+  .app-row__desc, .app-row__tag { grid-column: 2; }
+}
+
+/* ───── Compare table ───── */
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+.compare__col {
+  background: var(--bg);
+  padding: 3rem 2.5rem;
+}
+.compare__head {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.compare__title {
+  font-family: 'EB Garamond', serif;
+  font-size: 1.6rem;
+  margin-bottom: 2rem;
+}
+.compare__list {
+  list-style: none;
+}
+.compare__list li {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 0.95rem;
+  color: var(--text-soft);
+  display: flex;
+  gap: 1rem;
+  line-height: 1.6;
+}
+.compare__list li:last-child { border-bottom: none; }
+.compare__list li::before {
+  content: '—';
+  color: var(--accent);
+  flex-shrink: 0;
+}
+@media (max-width: 700px) {
+  .compare { grid-template-columns: 1fr; }
+}
+
+/* ───── Pull quote ───── */
+.pullquote {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+.pullquote__text {
+  font-family: 'EB Garamond', serif;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--text);
+  margin-bottom: 2rem;
+  letter-spacing: -0.01em;
+}
+.pullquote__attr {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.pullquote__attr::before {
+  content: '— ';
+}
+
+/* ───── Footer ───── */
+.footer {
+  border-top: 1px solid var(--line);
+  padding: 5rem 2rem 3rem;
+  background: var(--bg);
+}
+.footer__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 4rem;
+}
+@media (max-width: 800px) {
+  .footer__inner { grid-template-columns: 1fr 1fr; }
+}
+.footer__brand {
+  font-family: 'EB Garamond', serif;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+}
+.footer__brand span { color: var(--accent); }
+.footer__tag {
+  font-size: 0.85rem;
+  color: var(--text-mute);
+  line-height: 1.7;
+  max-width: 32ch;
+}
+.footer__col h4 {
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+.footer__col ul {
+  list-style: none;
+}
+.footer__col li {
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  padding: 0.4rem 0;
+  line-height: 1.5;
+}
+.footer__col li .mono { color: var(--text-mute); }
+.footer__bottom {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+/* ───── Fade-up animation utility ───── */
+.fade-up {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 1000ms var(--ease-quiet), transform 1000ms var(--ease-quiet);
+  will-change: opacity, transform;
+}
+.fade-up.is-in {
+  opacity: 1;
+  transform: none;
+}
+.fade-up[data-delay="1"] { transition-delay: 100ms; }
+.fade-up[data-delay="2"] { transition-delay: 200ms; }
+.fade-up[data-delay="3"] { transition-delay: 300ms; }
+.fade-up[data-delay="4"] { transition-delay: 400ms; }
+
+/* ───── Reduced motion ───── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .hero__image { transform: none; opacity: 1; filter: grayscale(0.5) brightness(0.55); }
+}
+</style>
+</head>
+<body>
+
+<div class="noise-overlay" aria-hidden="true"></div>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav class="nav">
+  <div class="nav__brand">Thermo<span>·</span>electricity</div>
+  <ul class="nav__links">
+    <li><a href="#definition">Definition</a></li>
+    <li><a href="#effects">Three Effects</a></li>
+    <li><a href="#materials">Materials</a></li>
+    <li><a href="#generators">Generators</a></li>
+    <li><a href="#applications">Applications</a></li>
+    <li><a href="#future">Future</a></li>
+  </ul>
+  <div class="nav__meta">A School Project · Phys. Vol. I</div>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<header class="hero">
+  <div class="hero__image-wrap">
+    <img class="hero__image" src="https://picsum.photos/seed/thermoelectric-coil-glow/1920/1200" alt="Heated metal coil with subtle thermal glow">
+  </div>
+  <div class="hero__veil"></div>
+  
+  <div class="hero__content">
+    <div class="hero__eyebrow" id="hero-eyebrow">A Study in Heat &amp; Charge</div>
+    <h1 class="hero__title" id="hero-title">
+      Thermoelectricity, and the quiet border where <em>heat becomes current</em>.
+    </h1>
+    <p class="hero__sub" id="hero-sub">
+      A direct conversion between thermal energy and electrical energy — no moving parts, no fluids, no combustion. Three effects discovered across the nineteenth century still power spacecraft crossing the heliopause today. This is the physics, the materials, and the machines that turn a temperature difference into useful work.
+    </p>
+    <a class="hero__cta" href="#definition" id="hero-cta">
+      <span>Begin reading</span>
+      <span class="hero__cta-arrow">→</span>
+    </a>
+  </div>
+  
+  <div class="hero__corner" id="hero-corner">
+    Chapter <span>01</span> of 06<br>
+    Filed under: Solid-State Physics<br>
+    Reading time: <span>18 min</span>
+  </div>
+</header>
+
+<!-- ═══════════════ §01 DEFINITION ═══════════════ -->
+<section class="section" id="definition" data-section>
+  <div class="section__inner">
+    
+    <div class="sticky-pair">
+      <div class="sticky-pair__left">
+        <div class="section__head">
+          <span class="section__num">§ 01 — Definition</span>
+          <div class="eyebrow">The Core Idea</div>
+          <h2 class="section__title fade-up">A temperature difference, made <em>electrical</em>.</h2>
+          <p class="section__lede fade-up" data-delay="1">
+            Thermoelectricity is the direct, reversible conversion between a temperature gradient and an electric voltage inside a solid material. No turbines spin. No steam expands. The electrons themselves carry the heat.
+          </p>
+        </div>
+      </div>
+      
+      <div class="sticky-pair__right">
+        <div class="figure fade-up">
+          <div class="figure__frame">
+            <img class="figure__img" src="https://picsum.photos/seed/thermoelectric-module-macro/900/1100" alt="Macro view of a thermoelectric module">
+          </div>
+          <div class="figure__caption">
+            <span>Fig. 1.1</span>
+            <span>A commercial thermoelectric module, ~4 cm on a side. Inside are hundreds of bismuth-telluride couples sandwiched between ceramic plates.</span>
+          </div>
+        </div>
+        
+        <div class="prose prose-block fade-up">
+          <span class="meta">Plain definition</span>
+          <p>
+            Place one end of a metal rod in a flame and the other in ice water. <strong>Electrons at the hot end gain energy and diffuse toward the cold end</strong>, leaving the hot side slightly electron-poor and the cold side slightly electron-rich. A voltage appears across the rod — small, but real and measurable. This is the thermoelectric effect in its purest form.
+          </p>
+          <p>
+            The reverse also works. Push an external current through the rod and heat is carried from one end to the other: one side gets cold, the other gets hot. <em>Heat and charge move together</em>, joined at the scale of the electron.
+          </p>
+        </div>
+        
+        <div class="figure fade-up">
+          <div class="figure__frame">
+            <img class="figure__img" src="https://picsum.photos/seed/heat-gradient-bar/900/700" alt="Heated metal bar showing thermal gradient">
+          </div>
+          <div class="figure__caption">
+            <span>Fig. 1.2</span>
+            <span>A conductor under a temperature gradient. Charge carriers diffuse from hot to cold, building a measurable voltage.</span>
+          </div>
+        </div>
+        
+        <div class="prose prose-block fade-up">
+          <span class="meta">Why it matters</span>
+          <p>
+            Roughly <strong>60% of all energy humanity generates is lost as waste heat</strong> — from car exhausts, factory furnaces, server farms, even the back of your refrigerator. Thermoelectric converters offer a way to claw some of that back as electricity, silently and without moving parts. The same physics, run in reverse, gives us compact solid-state refrigerators and the long-lived power sources on deep-space probes.
+          </p>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════ §02 THREE EFFECTS ═══════════════ -->
+<section class="section" id="effects" data-section>
+  <div class="section__inner">
+    
+    <div class="section__head" style="max-width: 900px; margin-bottom: 6rem;">
+      <span class="section__num">§ 02 — The Three Effects</span>
+      <div class="eyebrow">Seebeck · Peltier · Thomson</div>
+      <h2 class="section__title fade-up">Three names for one phenomenon, discovered across <em>thirty years</em>.</h2>
+      <p class="section__lede fade-up" data-delay="1">
+        Between 1821 and 1851, three European physicists — working independently and with different apparatus — described three facets of the same underlying physics. Together they form the complete classical theory of thermoelectricity.
+      </p>
+    </div>
+
+    <!-- Seebeck -->
+    <div class="sticky-pair" style="margin-bottom: 8rem;">
+      <div class="sticky-pair__left">
+        <div class="fade-up">
+          <div class="eyebrow">Effect 01 / Seebeck · 1821</div>
+          <h3 style="font-size: 2.4rem; margin: 1.5rem 0 2rem; letter-spacing: -0.015em;">Heat makes a <em style="color: var(--accent);">voltage</em>.</h3>
+          <p class="prose" style="margin-bottom: 2rem;">
+            <strong>Thomas Johann Seebeck</strong>, an Estonian-German physicist living in Berlin, noticed that a compass needle moved when he placed it near a closed loop of two different metals whose junctions were at different temperatures. He had, in fact, generated an electric current from heat — though he himself believed he was observing a magnetic effect.
+          </p>
+          <p class="prose">
+            The voltage produced is <em>directly proportional</em> to the temperature difference, and the constant of proportionality — the <strong>Seebeck coefficient</strong>, S — depends on the materials at the junction.
+          </p>
+        </div>
+      </div>
+      
+      <div class="sticky-pair__right">
+        <div class="diagram fade-up">
+          <svg viewBox="0 0 500 360" xmlns="http://www.w3.org/2000/svg">
+            <!-- Hot junction -->
+            <rect x="60" y="80" width="100" height="60" class="diag-fill-accent" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="110" y="115" text-anchor="middle" class="diag-text-accent">T₁ (HOT)</text>
+            <path d="M 60 95 L 30 95 L 30 30 L 240 30 L 240 60" class="diag-line"/>
+            <text x="135" y="22" class="diag-text">Metal A (e.g. copper)</text>
+            
+            <!-- Cold junction -->
+            <rect x="340" y="80" width="100" height="60" class="diag-fill-soft" stroke="var(--text-soft)" stroke-width="1.5"/>
+            <text x="390" y="115" text-anchor="middle" class="diag-text">T₂ (COLD)</text>
+            <path d="M 440 95 L 470 95 L 470 30 L 260 30 L 260 60" class="diag-line-accent"/>
+            <text x="320" y="22" class="diag-text-accent">Metal B (e.g. constantan)</text>
+            
+            <!-- Voltmeter loop -->
+            <path d="M 110 140 L 110 240 L 200 240" class="diag-line"/>
+            <path d="M 390 140 L 390 240 L 300 240" class="diag-line"/>
+            <!-- Voltmeter -->
+            <circle cx="250" cy="240" r="40" class="diag-fill-soft" stroke="var(--text-soft)" stroke-width="1.5"/>
+            <text x="250" y="237" text-anchor="middle" class="diag-text">V</text>
+            <text x="250" y="252" text-anchor="middle" class="diag-text" style="font-size:9px;">voltmeter</text>
+            
+            <!-- Voltage label -->
+            <text x="250" y="305" text-anchor="middle" class="diag-text-accent" style="font-size:13px;">V = S · ΔT</text>
+            <text x="250" y="328" text-anchor="middle" class="diag-text">S = Seebeck coefficient (μV/K)</text>
+          </svg>
+          <div class="diagram__label">
+            <span>Fig. 2.1</span>
+            <span>The Seebeck circuit. Two dissimilar metals form a loop; one junction is heated, the other cooled. A voltage appears measurable across the loop.</span>
+          </div>
+        </div>
+        
+        <div class="equation fade-up">
+          V = S · ΔT
+          <div class="equation__where">
+            <strong>V</strong> &nbsp;—&nbsp; voltage produced (volts)<br>
+            <strong>S</strong> &nbsp;—&nbsp; Seebeck coefficient of the material pair (μV / K)<br>
+            <strong>ΔT</strong> &nbsp;—&nbsp; temperature difference between junctions (K)
+          </div>
+        </div>
+        
+        <div class="prose prose-block fade-up">
+          <span class="meta">Everyday use</span>
+          <p>
+            The thermocouple — a cheap, reliable temperature sensor found in industrial furnaces, kilns, gas boilers, and jet engines — is a direct application of the Seebeck effect. Two dissimilar metal wires welded at one tip generate a voltage that varies with temperature. <strong>No battery, no electronics at the hot end</strong>, just two wires. The same physics survives decades of 1200 °C service.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Peltier -->
+    <div class="sticky-pair" style="margin-bottom: 8rem;">
+      <div class="sticky-pair__left">
+        <div class="fade-up">
+          <div class="eyebrow">Effect 02 / Peltier · 1834</div>
+          <h3 style="font-size: 2.4rem; margin: 1.5rem 0 2rem; letter-spacing: -0.015em;">Current makes <em style="color: var(--accent);">cold</em>.</h3>
+          <p class="prose" style="margin-bottom: 2rem;">
+            Thirteen years after Seebeck, the French watchmaker-turned-physicist <strong>Jean Charles Athanase Peltier</strong> ran the experiment in reverse. He passed an electric current through a junction of two different metals and observed that <em>one junction grew warm and the other grew cold</em> — beyond the simple resistive heating he expected.
+          </p>
+          <p class="prose">
+            Heat was being absorbed or released <strong>at the junction itself</strong>, depending on the direction of current flow. Reverse the current, and hot becomes cold. This is the basis of every solid-state refrigerator and CPU cooler in use today.
+          </p>
+        </div>
+      </div>
+      
+      <div class="sticky-pair__right">
+        <div class="diagram fade-up">
+          <svg viewBox="0 0 500 360" xmlns="http://www.w3.org/2000/svg">
+            <!-- Battery / current source -->
+            <rect x="60" y="180" width="80" height="60" class="diag-fill-soft" stroke="var(--text-soft)" stroke-width="1.5"/>
+            <text x="100" y="210" text-anchor="middle" class="diag-text">Battery</text>
+            <text x="100" y="225" text-anchor="middle" class="diag-text" style="font-size:9px;">DC source</text>
+            
+            <!-- Top wire to junction -->
+            <path d="M 60 195 L 30 195 L 30 80 L 200 80" class="diag-line-accent"/>
+            <text x="115" y="70" class="diag-text-accent">→ current flow</text>
+            
+            <!-- Junction 1 (cold) -->
+            <rect x="200" y="60" width="100" height="50" class="diag-fill-soft" stroke="var(--text-soft)" stroke-width="1.5"/>
+            <text x="250" y="83" text-anchor="middle" class="diag-text">Junction 1</text>
+            <text x="250" y="98" text-anchor="middle" class="diag-text-accent">ABSORBS HEAT</text>
+            <text x="250" y="42" text-anchor="middle" class="diag-text-accent" style="font-size:14px;">COLD ❄</text>
+            
+            <!-- Metal B -->
+            <path d="M 300 85 L 470 85 L 470 195 L 440 195" class="diag-line"/>
+            <text x="370" y="75" class="diag-text">Metal B</text>
+            
+            <!-- Bottom return -->
+            <path d="M 140 210 L 470 210 L 470 85" class="diag-line"/>
+            <text x="370" y="225" class="diag-text">Metal A</text>
+            
+            <!-- Junction 2 (hot) - need a way to show it. Actually simpler representation -->
+            <rect x="200" y="195" width="100" height="50" class="diag-fill-accent" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="250" y="218" text-anchor="middle" class="diag-text">Junction 2</text>
+            <text x="250" y="233" text-anchor="middle" class="diag-text-accent">RELEASES HEAT</text>
+            <text x="250" y="278" text-anchor="middle" class="diag-text-accent" style="font-size:14px;">HOT 🔥</text>
+            
+            <!-- Hidden wire representation fix -->
+            <line x1="250" y1="110" x2="250" y2="195" class="diag-line" stroke-dasharray="3,3"/>
+          </svg>
+          <div class="diagram__label">
+            <span>Fig. 2.2</span>
+            <span>The Peltier circuit. An external current driven through a junction of two dissimilar conductors causes heat to be absorbed at one junction and released at the other.</span>
+          </div>
+        </div>
+        
+        <div class="equation fade-up">
+          Q̇ = Π · I
+          <div class="equation__where">
+            <strong>Q̇</strong> &nbsp;—&nbsp; rate of heat absorbed or released at the junction (watts)<br>
+            <strong>Π</strong> &nbsp;—&nbsp; Peltier coefficient of the material pair (volts)<br>
+            <strong>I</strong> &nbsp;—&nbsp; current through the junction (amperes)
+          </div>
+        </div>
+        
+        <div class="prose prose-block fade-up">
+          <span class="meta">In your computer</span>
+          <p>
+            The small flat plates screwed onto high-end CPU and GPU coolers, the portable car-seat coolers that plug into a cigarette lighter, the wine-chilling buckets in hotel rooms — all run on the Peltier effect. <strong>Reverse the polarity of the wires and a Peltier cooler becomes a heater</strong>. The same device cools in summer and warms in winter.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thomson -->
+    <div class="sticky-pair">
+      <div class="sticky-pair__left">
+        <div class="fade-up">
+          <div class="eyebrow">Effect 03 / Thomson · 1851</div>
+          <h3 style="font-size: 2.4rem; margin: 1.5rem 0 2rem; letter-spacing: -0.015em;">A gradient, within <em style="color: var(--accent);">one</em> conductor.</h3>
+          <p class="prose" style="margin-bottom: 2rem;">
+            The Scottish physicist <strong>William Thomson</strong> — later Lord Kelvin — realized that Seebeck and Peltier were not independent. He predicted, and then demonstrated, that a current flowing through a <em>single</em> homogeneous conductor with a temperature gradient along its length would also absorb or release heat along that length.
+          </p>
+          <p class="prose">
+            The Thomson effect is the smallest of the three, and is usually a correction term rather than a headline phenomenon. But it completed the classical picture, and Thomson's deeper insight — that the Seebeck and Peltier coefficients are related through the absolute temperature — gave us the <strong>Thomson relations</strong>, still the foundation of all thermoelectric theory.
+          </p>
+        </div>
+      </div>
+      
+      <div class="sticky-pair__right">
+        <div class="figure fade-up">
+          <div class="figure__frame">
+            <img class="figure__img" src="https://picsum.photos/seed/lord-kelvin-portrait/900/1100" alt="Period portrait of a Victorian physicist">
+          </div>
+          <div class="figure__caption">
+            <span>Fig. 2.3</span>
+            <span>William Thomson, 1st Baron Kelvin (1824–1907). His 1851 paper connected Seebeck and Peltier through what are now called the Kelvin relations.</span>
+          </div>
+        </div>
+        
+        <div class="equation fade-up">
+          Π = S · T
+          <div class="equation__where">
+            <strong>Π</strong> &nbsp;—&nbsp; Peltier coefficient<br>
+            <strong>S</strong> &nbsp;—&nbsp; Seebeck coefficient<br>
+            <strong>T</strong> &nbsp;—&nbsp; absolute temperature (kelvin)<br><br>
+            <em style="color: var(--text-mute); font-size: 0.85rem;">The first Thomson relation: the two effects are aspects of the same underlying physics, linked by temperature.</em>
+          </div>
+        </div>
+        
+        <div class="prose prose-block fade-up">
+          <span class="meta">Why it matters</span>
+          <p>
+            The Thomson relations are not just a curiosity. They tell us that any material with a non-zero Seebeck coefficient must also exhibit the Peltier effect — and vice versa. <strong>A good thermoelectric generator is, by the same token, a good thermoelectric cooler.</strong> The two devices are the same machine run in opposite directions.
+          </p>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════ PULL QUOTE ═══════════════ -->
+<section class="section" style="padding: 4rem 2rem;">
+  <div class="pullquote">
+    <p class="pullquote__text fade-up">
+      "Heat and electricity are convertible into each other; the unit of heat is a definite and invariable quantity, and the equivalent of heat for one unit of electricity is also a definite and invariable quantity."
+    </p>
+    <p class="pullquote__attr fade-up" data-delay="1">James Prescott Joule · 1843</p>
+  </div>
+</section>
+
+<!-- ═══════════════ §03 MATERIALS ═══════════════ -->
+<section class="section" id="materials" data-section>
+  <div class="section__inner">
+    
+    <div class="section__head" style="max-width: 900px; margin-bottom: 5rem;">
+      <span class="section__num">§ 03 — Thermoelectric Materials</span>
+      <div class="eyebrow">The Figure of Merit</div>
+      <h2 class="section__title fade-up">The hardest problem in the field: <em>good conductors of electricity, bad conductors of heat</em>.</h2>
+      <p class="section__lede fade-up" data-delay="1">
+        A good thermoelectric material must satisfy three contradictory demands at once. It must conduct electricity well, conduct heat poorly, and have a large Seebeck coefficient. The three are deeply linked — improving one usually degrades the others.
+      </p>
+    </div>
+    
+    <div class="equation fade-up" style="margin-bottom: 5rem; max-width: 900px; margin-left: auto; margin-right: auto;">
+      ZT = (S² · σ · T) / κ
+      <div class="equation__where">
+        <strong>ZT</strong> &nbsp;—&nbsp; dimensionless figure of merit (the higher, the better)<br>
+        <strong>S</strong> &nbsp;—&nbsp; Seebeck coefficient (V / K)<br>
+        <strong>σ</strong> &nbsp;—&nbsp; electrical conductivity (S / m)<br>
+        <strong>T</strong> &nbsp;—&nbsp; absolute temperature (K)<br>
+        <strong>κ</strong> &nbsp;—&nbsp; thermal conductivity (W / m·K)<br><br>
+        <em style="color: var(--text-mute); font-size: 0.85rem;">A ZT of 1 is workable; ZT of 2 is excellent; ZT of 3 has been the field's grail for fifty years.</em>
+      </div>
+    </div>
+    
+    <div class="sticky-pair">
+      <div class="sticky-pair__left">
+        <div class="fade-up">
+          <div class="eyebrow">The central paradox</div>
+          <h3 style="font-size: 2.2rem; margin: 1.5rem 0 2rem; letter-spacing: -0.015em;">Why <em style="color: var(--accent);">ZT</em> is so hard to raise.</h3>
+          <p class="prose" style="margin-bottom: 1.5rem;">
+            In a normal metal, the same electrons that carry charge also carry heat. So any material that conducts electricity well — high σ — also conducts heat well — high κ. The ratio S²σ/κ that defines ZT ends up fighting itself.
+          </p>
+          <p class="prose" style="margin-bottom: 1.5rem;">
+            The breakthrough came when chemists turned to <strong>heavily doped semiconductors</strong>, where electrons carry charge but lattice vibrations (phonons) carry most of the heat. By engineering the crystal structure to scatter phonons while letting electrons pass, the two conductivities can be unlinked.
+          </p>
+          <p class="prose">
+            Modern thermoelectric research is largely the search for crystal structures, nanostructures, and alloy compositions that <em>break the natural coupling</em> between σ and κ.
+          </p>
+        </div>
+      </div>
+      
+      <div class="sticky-pair__right">
+        <div class="figure fade-up">
+          <div class="figure__frame">
+            <img class="figure__img" src="https://picsum.photos/seed/bismuth-telluride-crystal/900/700" alt="Crystalline thermoelectric material sample">
+          </div>
+          <div class="figure__caption">
+            <span>Fig. 3.1</span>
+            <span>A boule of bismuth telluride, the workhorse thermoelectric material for near-room-temperature applications.</span>
+          </div>
+        </div>
+        
+        <div class="figure fade-up">
+          <div class="figure__frame">
+            <img class="figure__img" src="https://picsum.photos/seed/skutterudite-lattice/900/700" alt="Microscopic view of a complex crystal lattice">
+          </div>
+          <div class="figure__caption">
+            <span>Fig. 3.2</span>
+            <span>Skutterudite crystal structure, a candidate for mid-temperature thermoelectric generation. The "rattling" atoms inside the cage scatter phonons and lower thermal conductivity.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <h3 style="font-size: 1.8rem; margin: 6rem 0 2rem; font-family: 'EB Garamond', serif; font-style: italic; color: var(--text);">The four families of working materials</h3>
+    <p class="prose" style="max-width: 70ch; margin-bottom: 3rem; color: var(--text-soft);">
+      Each family dominates a different temperature range. No single material performs well across the full span — engineers pick the material whose peak ZT falls inside the temperature range of the application.
+    </p>
+    
+    <div class="materials fade-up">
+      <div class="material">
+        <div class="material__formula">Bi₂Te₃</div>
+        <div class="material__name">Bismuth telluride</div>
+        <div class="material__range">PEAK · 50–150 °C &nbsp;|&nbsp; ZT ≈ 1.0</div>
+        <div class="material__desc">The workhorse. Used in CPU coolers, picnic boxes, and small refrigerators. Alloyed with antimony and selenium for tuning.</div>
+      </div>
+      <div class="material">
+        <div class="material__formula">PbTe</div>
+        <div class="material__name">Lead telluride</div>
+        <div class="material__range">PEAK · 300–600 °C &nbsp;|&nbsp; ZT ≈ 0.8–1.2</div>
+        <div class="material__desc">The classic mid-temperature material. Powers radioisotope thermoelectric generators in deep-space probes. Toxic; restricts civilian use.</div>
+      </div>
+      <div class="material">
+        <div class="material__formula">SiGe</div>
+        <div class="material__name">Silicon-germanium alloy</div>
+        <div class="material__range">PEAK · 600–1000 °C &nbsp;|&nbsp; ZT ≈ 0.5–0.9</div>
+        <div class="material__desc">Survives extreme heat. Used in the multi-hundred-watt RTGs that powered Voyager, Galileo, and Cassini past Jupiter.</div>
+      </div>
+      <div class="material">
+        <div class="material__formula">Half-Heusler</div>
+        <div class="material__name">Half-Heusler alloys</div>
+        <div class="material__range">PEAK · 400–700 °C &nbsp;|&nbsp; ZT ≈ 0.8–1.0</div>
+        <div class="material__desc">Newer, less toxic, mechanically robust. Leading candidate for industrial waste-heat recovery in steel and glass plants.</div>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════ §04 GENERATORS ═══════════════ -->
+<section class="section" id="generators" data-section>
+  <div class="section__inner">
+    
+    <div class="section__head" style="max-width: 900px; margin-bottom: 6rem;">
+      <span class="section__num">§ 04 — Generators &amp; Coolers</span>
+      <div class="eyebrow">Building Real Devices</div>
+      <h2 class="section__title fade-up">From a single junction to a <em>module</em>.</h2>
+      <p class="section__lede fade-up" data-delay="1">
+        A single thermocouple produces millivolts. To get useful voltage and current, hundreds of couples are wired electrically in series and thermally in parallel, sandwiched between two ceramic plates. The result is the thermoelectric module.
+      </p>
+    </div>
+    
+    <div class="sticky-pair">
+      <div class="sticky-pair__left">
+        <div class="fade-up">
+          <div class="eyebrow">TEG — Thermoelectric Generator</div>
+          <h3 style="font-size: 2.2rem; margin: 1.5rem 0 2rem; letter-spacing: -0.015em;">Heat in. <em style="color: var(--accent);">Electricity out.</em></h3>
+          <p class="prose" style="margin-bottom: 1.5rem;">
+            A TEG is built from pairs of <strong>n-type</strong> and <strong>p-type</strong> semiconductor legs. The hot side is held against a heat source; the cold side against a heat sink. Electrons in the n-type leg and holes in the p-type leg both migrate from hot to cold — but because they carry opposite charges, the currents add rather than cancel.
+          </p>
+          <p class="prose" style="margin-bottom: 1.5rem;">
+            The two legs are joined at the hot end by a metal interconnect, and at the cold end they connect to the external circuit. Many such pairs — typically 127 or 254 — are wired in series inside a single module to raise the output voltage to a useful range.
+          </p>
+          <p class="prose">
+            Efficiencies are modest: <strong>5–8%</strong> for commercial modules, up to <strong>~12%</strong> for the best laboratory devices. For comparison, a steam turbine reaches 35–45%. But TEGs have no moving parts, no maintenance, and work for decades.
+          </p>
+        </div>
+      </div>
+      
+      <div class="sticky-pair__right">
+        <div class="diagram fade-up">
+          <svg viewBox="0 0 500 460" xmlns="http://www.w3.org/2000/svg">
+            <!-- Hot ceramic plate -->
+            <rect x="50" y="30" width="400" height="22" class="diag-fill-accent" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="250" y="46" text-anchor="middle" class="diag-text-accent">HOT SIDE — T₁ (heat source)</text>
+            <path d="M 60 25 L 60 15 L 90 25 L 120 15 L 150 25 L 180 15 L 210 25 L 240 15 L 270 25 L 300 15 L 330 25 L 360 15 L 390 25 L 420 15 L 440 25" 
+                  class="diag-line-accent" stroke-width="1"/>
+            <text x="470" y="46" class="diag-text-accent" style="font-size:10px;">→ heat</text>
+            
+            <!-- p-leg -->
+            <rect x="120" y="80" width="50" height="240" class="diag-fill-soft" stroke="var(--text-soft)" stroke-width="1.5"/>
+            <text x="145" y="195" text-anchor="middle" class="diag-text" transform="rotate(-90 145 195)">p-type</text>
+            
+            <!-- n-leg -->
+            <rect x="200" y="80" width="50" height="240" class="diag-fill-soft" stroke="var(--text-soft)" stroke-width="1.5"/>
+            <text x="225" y="195" text-anchor="middle" class="diag-text" transform="rotate(-90 225 195)">n-type</text>
+            
+            <!-- Hot-side interconnect -->
+            <rect x="120" y="62" width="130" height="14" fill="rgba(200,170,130,0.4)" stroke="var(--accent)" stroke-width="1"/>
+            <text x="185" y="58" text-anchor="middle" class="diag-text-accent" style="font-size:9px;">metal interconnect</text>
+            
+            <!-- Cold-side connections -->
+            <rect x="115" y="318" width="60" height="14" fill="rgba(255,255,255,0.1)" stroke="var(--text-soft)" stroke-width="1"/>
+            <rect x="195" y="318" width="60" height="14" fill="rgba(255,255,255,0.1)" stroke="var(--text-soft)" stroke-width="1"/>
+            
+            <!-- External circuit wires -->
+            <path d="M 120 332 L 120 380 L 80 380 L 80 410" class="diag-line"/>
+            <path d="M 250 332 L 250 380 L 290 380 L 290 410" class="diag-line"/>
+            
+            <!-- Load -->
+            <rect x="60" y="410" width="40" height="20" class="diag-fill-soft" stroke="var(--text-soft)" stroke-width="1.5"/>
+            <text x="80" y="424" text-anchor="middle" class="diag-text" style="font-size:9px;">LOAD</text>
+            <rect x="270" y="410" width="40" height="20" class="diag-fill-soft" stroke="var(--text-soft)" stroke-width="1.5"/>
+            <text x="290" y="424" text-anchor="middle" class="diag-text" style="font-size:9px;">V_out</text>
+            <line x1="100" y1="420" x2="270" y2="420" class="diag-line"/>
+            
+            <!-- Cold ceramic plate -->
+            <rect x="50" y="352" width="400" height="22" class="diag-fill-soft" stroke="var(--text-soft)" stroke-width="1.5"/>
+            <text x="250" y="368" text-anchor="middle" class="diag-text">COLD SIDE — T₂ (heat sink)</text>
+            <path d="M 60 385 L 60 395 L 90 385 L 120 395 L 150 385 L 180 395 L 210 385 L 240 395 L 270 385 L 300 395 L 330 385 L 360 395 L 390 385 L 420 395 L 440 385" 
+                  class="diag-line" stroke-width="1"/>
+            <text x="470" y="368" class="diag-text" style="font-size:10px;">→ heat</text>
+            
+            <!-- Current arrows -->
+            <path d="M 145 280 L 145 110" class="diag-line-accent" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <path d="M 225 110 L 225 280" class="diag-line-accent" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+              </marker>
+            </defs>
+            
+            <text x="250" y="100" text-anchor="middle" class="diag-text-accent">↓ holes</text>
+            <text x="250" y="290" text-anchor="middle" class="diag-text-accent">↑ electrons</text>
+          </svg>
+          <div class="diagram__label">
+            <span>Fig. 4.1</span>
+            <span>A single thermocouple inside a TEG module. Hundreds of these are wired in series to produce useful voltage. n-type and p-type legs carry opposite carriers, so their currents add.</span>
+          </div>
+        </div>
+        
+        <div class="prose prose-block fade-up">
+          <span class="meta">Carnot bound</span>
+          <p>
+            No heat engine can exceed the Carnot efficiency η = (T<sub>h</sub> − T<sub>c</sub>) / T<sub>h</sub>. For a TEG running at 500 °C hot and 50 °C cold, that limit is about 60%. Real TEGs reach a <strong>fraction of Carnot</strong>, typically 10–20% of the theoretical maximum.
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="sticky-pair" style="margin-top: 8rem;">
+      <div class="sticky-pair__left">
+        <div class="fade-up">
+          <div class="eyebrow">TEC — Thermoelectric Cooler</div>
+          <h3 style="font-size: 2.2rem; margin: 1.5rem 0 2rem; letter-spacing: -0.015em;">Electricity in. <em style="color: var(--accent);">Cold out.</em></h3>
+          <p class="prose" style="margin-bottom: 1.5rem;">
+            Run the same module in reverse. Apply a DC voltage across the cold-side terminals, and electrons stream through the n-leg from cold to hot (carrying heat with them), while holes do the same in the p-leg. The hot-side interconnect absorbs heat; the cold side releases it.
+          </p>
+          <p class="prose" style="margin-bottom: 1.5rem;">
+            The result is a solid-state refrigerator: <strong>no compressor, no refrigerant, no noise, no vibration</strong>. Reverse the polarity and it becomes a heater. Stack them in stages and you can reach temperatures as low as −100 °C from a single room-temperature starting point.
+          </p>
+          <p class="prose">
+            Coefficient of performance (COP) is typically 0.4–0.7 for single-stage TECs — far below a vapor-compression fridge at COP 2–4. The trade-off is simplicity and reliability: a TEC will run for 100,000+ hours with no maintenance.
+          </p>
+        </div>
+      </div>
+      
+      <div class="sticky-pair__right">
+        <div class="figure fade-up">
+          <div class="figure__frame">
+            <img class="figure__img" src="https://picsum.photos/seed/peltier-module-circuit/900/700" alt="Peltier cooling module with wires attached">
+          </div>
+          <div class="figure__caption">
+            <span>Fig. 4.2</span>
+            <span>A Peltier module with attached heatsink, used for CPU cooling in high-performance computers. The cold face sits against the processor; the hot face vents to the heatsink.</span>
+          </div>
+        </div>
+        
+        <div class="prose prose-block fade-up">
+          <span class="meta">The same machine</span>
+          <p>
+            By the <strong>Kelvin relation</strong> (see §02), a material with a high Seebeck coefficient also has a high Peltier coefficient. So the same bismuth-telluride module that generates electricity from a wood-stove's heat can be unplugged, wired to a battery, and used to chill a drink. <em>The generator and the cooler are the same physical object, run in opposite directions.</em>
+          </p>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════ §05 APPLICATIONS ═══════════════ -->
+<section class="section" id="applications" data-section>
+  <div class="section__inner">
+    
+    <div class="section__head" style="max-width: 900px; margin-bottom: 5rem;">
+      <span class="section__num">§ 05 — Applications</span>
+      <div class="eyebrow">Where It Actually Lives</div>
+      <h2 class="section__title fade-up">From the surface of Mars to the back of a <em>wristwatch</em>.</h2>
+      <p class="section__lede fade-up" data-delay="1">
+        Thermoelectric devices are quiet, small, and astonishingly long-lived. They appear wherever one of those properties is worth more than raw efficiency. Below: eight places they actually show up.
+      </p>
+    </div>
+    
+    <div class="app-list fade-up">
+      
+      <div class="app-row">
+        <div class="app-row__num">01</div>
+        <div class="app-row__title">Radioisotope Thermoelectric Generators (RTGs)</div>
+        <div class="app-row__desc">Plutonium-238 decay heat, converted to electricity by PbTe or SiGe thermocouples. Powered Voyager 1 &amp; 2 (still running, 47 years on), Cassini, Curiosity, Perseverance, New Horizons.</div>
+        <div class="app-row__tag">Space</div>
+      </div>
+      
+      <div class="app-row">
+        <div class="app-row__num">02</div>
+        <div class="app-row__title">Automotive waste-heat recovery</div>
+        <div class="app-row__desc">A TEG strapped to a car exhaust pipe can recover 100–600 W of electricity that would otherwise be dumped into the air. BMW, Ford, and Toyota have all built prototypes.</div>
+        <div class="app-row__tag">Transport</div>
+      </div>
+      
+      <div class="app-row">
+        <div class="app-row__num">03</div>
+        <div class="app-row__title">CPU &amp; GPU cooling</div>
+        <div class="app-row__desc">Peltier modules hold overclocked processors below ambient. Combined with vapor-chamber heatsinks in gaming laptops, server blades, and high-end workstations.</div>
+        <div class="app-row__tag">Computing</div>
+      </div>
+      
+      <div class="app-row">
+        <div class="app-row__num">04</div>
+        <div class="app-row__title">Industrial furnace harvesters</div>
+        <div class="app-row__desc">Steel mills, glass foundries, cement kilns — all run at 800–1500 °C and vent enormous waste heat. Half-Heusler TEGs mounted on flue stacks can supply kilowatts per square meter.</div>
+        <div class="app-row__tag">Industry</div>
+      </div>
+      
+      <div class="app-row">
+        <div class="app-row__num">05</div>
+        <div class="app-row__title">Portable vaccine coolers</div>
+        <div class="app-row__desc">In off-grid regions, Peltier coolers powered by small solar panels keep vaccines at 2–8 °C during transport. WHO-qualified units are now deployed across sub-Saharan Africa.</div>
+        <div class="app-row__tag">Medical</div>
+      </div>
+      
+      <div class="app-row">
+        <div class="app-row__num">06</div>
+        <div class="app-row__title">Body-heat-powered wearables</div>
+        <div class="app-row__desc">A thin-film TEG on the wrist, with the skin as the hot side and the air as the cold side, generates tens of microwatts — enough to run a low-power watch or a medical sensor indefinitely, no battery.</div>
+        <div class="app-row__tag">Wearable</div>
+      </div>
+      
+      <div class="app-row">
+        <div class="app-row__num">07</div>
+        <div class="app-row__title">Cryogenic infrared detectors</div>
+        <div class="app-row__desc">Multi-stage Peltier coolers reach −100 °C without liquid nitrogen, cooling the infrared sensors in thermal cameras, night-vision optics, and satellite imagers.</div>
+        <div class="app-row__tag">Sensing</div>
+      </div>
+      
+      <div class="app-row">
+        <div class="app-row__num">08</div>
+        <div class="app-row__title">Solar thermoelectric generators</div>
+        <div class="app-row__desc">Concentrated sunlight heats one side of a TEG; ambient air cools the other. Simpler and more durable than photovoltaics in dusty, hot, remote environments — though less efficient.</div>
+        <div class="app-row__tag">Energy</div>
+      </div>
+      
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════ §06 CASE STUDY: VOYAGER ═══════════════ -->
+<section class="section" id="case-study" data-section>
+  <div class="section__inner">
+    
+    <div class="section__head" style="max-width: 900px; margin-bottom: 5rem;">
+      <span class="section__num">§ 06 — Case Study</span>
+      <div class="eyebrow">Voyager &amp; the RTG</div>
+      <h2 class="section__title fade-up">A fifty-year mission, powered by <em>decaying plutonium</em>.</h2>
+      <p class="section__lede fade-up" data-delay="1">
+        Launched in 1977, the two Voyager probes are now in interstellar space — the most distant human-made objects in existence. Their instruments still transmit data back to Earth across 24 billion kilometers of empty space. They are powered by thermoelectric generators.
+      </p>
+    </div>
+    
+    <div class="sticky-pair">
+      <div class="sticky-pair__left">
+        <div class="fade-up">
+          <div class="eyebrow">The Power Source</div>
+          <h3 style="font-size: 2.2rem; margin: 1.5rem 0 2rem; letter-spacing: -0.015em;">3.7 kilograms of <em style="color: var(--accent);">Pu-238</em>.</h3>
+          <p class="prose" style="margin-bottom: 1.5rem;">
+            Each Voyager carries three RTGs. Inside each is a slug of plutonium-238 dioxide, generating heat by radioactive decay at a half-life of 87.7 years. That heat — about 2,400 W at launch, 1,970 W today — passes through silicon-germanium thermocouples and is partially converted to electricity.
+          </p>
+          <p class="prose" style="margin-bottom: 1.5rem;">
+            At launch in 1977 each spacecraft generated <strong>470 watts</strong> of electrical power. By 2024, after 47 years of slow plutonium decay, output has fallen to about <strong>219 watts</strong>. Instruments have been switched off, one by one, to keep the radios running.
+          </p>
+          <p class="prose">
+            No other power source could have done this. Solar panels are useless past Jupiter; chemical batteries die in years; fuel cells need fuel. <em>Thermoelectricity, with no moving parts, has run for half a century in vacuum at −260 °C.</em>
+          </p>
+        </div>
+      </div>
+      
+      <div class="sticky-pair__right">
+        <div class="figure fade-up">
+          <div class="figure__frame">
+            <img class="figure__img" src="https://picsum.photos/seed/voyager-spacecraft-deep-space/900/1200" alt="Spacecraft in deep space">
+          </div>
+          <div class="figure__caption">
+            <span>Fig. 6.1</span>
+            <span>An artist's rendering of a Voyager probe in interstellar space. The three RTG boom arms hold the thermoelectric generators far from the sensitive instruments.</span>
+          </div>
+        </div>
+        
+        <div class="figure fade-up">
+          <div class="figure__frame">
+            <img class="figure__img" src="https://picsum.photos/seed/plutonium-heat-glow/900/700" alt="Glowing heat source">
+          </div>
+          <div class="figure__caption">
+            <span>Fig. 6.2</span>
+            <span>A glowing radioisotope heat source undergoing pre-launch thermal testing. The visible glow is ~1300 °C — the temperature difference that drives the SiGe thermocouples.</span>
+          </div>
+        </div>
+        
+        <div class="prose prose-block fade-up">
+          <span class="meta">Timeline</span>
+          <p>
+            <strong>1977</strong> — Voyager 1 &amp; 2 launched.<br>
+            <strong>1979–80</strong> — Jupiter and Saturn flybys.<br>
+            <strong>1986</strong> — Voyager 2 at Uranus.<br>
+            <strong>1989</strong> — Voyager 2 at Neptune.<br>
+            <strong>2012</strong> — Voyager 1 crosses heliopause, enters interstellar space.<br>
+            <strong>2024</strong> — Both probes still transmitting. Power sufficient until ~2030.<br>
+            <strong>~2036</strong> — Beyond range of contact.
+          </p>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════ §07 ADVANTAGES & LIMITATIONS ═══════════════ -->
+<section class="section" id="tradeoffs" data-section>
+  <div class="section__inner">
+    
+    <div class="section__head" style="max-width: 900px; margin-bottom: 5rem;">
+      <span class="section__num">§ 07 — Trade-offs</span>
+      <div class="eyebrow">An Honest Assessment</div>
+      <h2 class="section__title fade-up">Why every building isn't already covered in <em>TEGs</em>.</h2>
+      <p class="section__lede fade-up" data-delay="1">
+        Thermoelectricity is not a free lunch. Its strengths — silence, longevity, compactness — are real and unusual. Its weaknesses — low efficiency, high cost, material toxicity — are equally real and explain why the technology has not taken over the world.
+      </p>
+    </div>
+    
+    <div class="compare fade-up">
+      <div class="compare__col">
+        <div class="compare__head">Strengths</div>
+        <div class="compare__title">Where thermoelectricity wins</div>
+        <ul class="compare__list">
+          <li>No moving parts. Lifetimes of 100,000+ hours, often limited only by the surrounding electronics.</li>
+          <li>Absolute silence. No compressor, no turbine, no fan (in pure TEG mode).</li>
+          <li>Compact and scalable. Same module works at milliwatts or kilowatts; just stack more.</li>
+          <li>Works at any orientation, in zero gravity, in vacuum, under high vibration.</li>
+          <li>Reversible. The same device is a generator and a cooler, depending on which side you push.</li>
+          <li>No refrigerants. No greenhouse-gas leakage, no ozone depletion.</li>
+          <li>Direct DC output. No inverter, no rectifier, no AC conversion losses.</li>
+        </ul>
+      </div>
+      <div class="compare__col">
+        <div class="compare__head">Limitations</div>
+        <div class="compare__title">Where it loses</div>
+        <ul class="compare__list">
+          <li>Low efficiency. Best commercial TEGs reach 8–12%; vapor-compression fridges hit 40–60% of Carnot.</li>
+          <li>High material cost. Tellurium, used in Bi₂Te₃, is rarer than platinum (~$70/kg, supply-limited).</li>
+          <li>Toxicity. Lead, tellurium, antimony — most high-performance materials are environmentally problematic.</li>
+          <li>Narrow temperature windows. Each material family works only in a ~300 °C band; outside it, performance collapses.</li>
+          <li>Brittle ceramics. Modules crack under thermal shock or mechanical stress.</li>
+          <li>Contact resistance. Every interconnect adds resistance; small losses compound across 254 couples.</li>
+          <li>Heat-sink burden. The cold side must reject heat as fast as the hot side supplies it, or the gradient collapses.</li>
+        </ul>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════ §08 FUTURE ═══════════════ -->
+<section class="section" id="future" data-section>
+  <div class="section__inner">
+    
+    <div class="section__head" style="max-width: 900px; margin-bottom: 6rem;">
+      <span class="section__num">§ 08 — Future Directions</span>
+      <div class="eyebrow">The Road Ahead</div>
+      <h2 class="section__title fade-up">Where the next decade of <em>research</em> is going.</h2>
+      <p class="section__lede fade-up" data-delay="1">
+        Most of the meaningful progress in thermoelectricity now happens at the nanometer scale — in crystal lattices engineered one layer at a time, in materials shaped like noodles or sponges, in theories of heat flow borrowed from quantum mechanics.
+      </p>
+    </div>
+    
+    <div class="sticky-pair">
+      <div class="sticky-pair__left">
+        <div class="fade-up">
+          <div class="eyebrow">Nanostructuring</div>
+          <h3 style="font-size: 2.2rem; margin: 1.5rem 0 2rem; letter-spacing: -0.015em;">The phonon <em>glass</em>, the electron <em>crystal</em>.</h3>
+          <p class="prose" style="margin-bottom: 1.5rem;">
+            The dream of thermoelectric materials science is a substance that scatters phonons (heat) like amorphous glass but conducts electrons like a perfect crystal. <strong>Nanostructuring</strong> — building materials from grains or layers only a few nanometers across — does this by introducing boundaries that impede long-wavelength phonons but let electrons pass with their wavelength intact.
+          </p>
+          <p class="prose" style="margin-bottom: 1.5rem;">
+            The record ZT values — above 2.0 in some lab samples — have all come from nanostructured materials: superlattices, quantum dots, nanowires, skutterudites with "rattling" atoms inside their cages.
+          </p>
+          <p class="prose">
+            Scaling these from laboratory curiosities to industrial products is the current frontier. Some have made the leap: <strong>nanocrystalline Bi₂Te₃</strong> is now sold commercially with a ZT roughly 30% higher than its bulk predecessor.
+          </p>
+        </div>
+      </div>
+      
+      <div class="sticky-pair__right">
+        <div class="figure fade-up">
+          <div class="figure__frame">
+            <img class="figure__img" src="https://picsum.photos/seed/nanowire-electron-microscope/900/700" alt="Electron microscope view of nanowires">
+          </div>
+          <div class="figure__caption">
+            <span>Fig. 8.1</span>
+            <span>Scanning-electron micrograph of a silicon nanowire array. At nanometer diameters, the wire boundary scatters phonons far more effectively than electrons.</span>
+          </div>
+        </div>
+        
+        <div class="figure fade-up">
+          <div class="figure__frame">
+            <img class="figure__img" src="https://picsum.photos/seed/quantum-material-lattice/900/700" alt="Abstract view of a quantum material">
+          </div>
+          <div class="figure__caption">
+            <span>Fig. 8.2</span>
+            <span>A superlattice of alternating thin films. Each interface reflects phonons but transmits electrons — the central trick of nanostructured thermoelectrics.</span>
+          </div>
+        </div>
+        
+        <div class="prose prose-block fade-up">
+          <span class="meta">Other open questions</span>
+          <p>
+            <strong>Polymer thermoelectrics</strong> — cheap, flexible, printable — could turn clothing into power sources. Current ZT is only ~0.2, but rising fast.<br><br>
+            <strong>Topological insulators</strong>, where the surface conducts perfectly while the bulk is insulating, may offer unprecedented decoupling of σ and κ.<br><br>
+            <strong>Spin-caloritronics</strong> uses the electron's spin, not just its charge, to carry heat — an entirely new thermoelectric mechanism, still mostly theoretical.
+          </p>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════ §09 REFERENCES ═══════════════ -->
+<section class="section" id="references" data-section>
+  <div class="section__inner">
+    
+    <div class="section__head" style="max-width: 900px; margin-bottom: 5rem;">
+      <span class="section__num">§ 09 — References</span>
+      <div class="eyebrow">Sources &amp; Further Reading</div>
+      <h2 class="section__title fade-up">Where this <em>came from</em>.</h2>
+      <p class="section__lede fade-up" data-delay="1">
+        A short list of the books, papers, and primary sources behind this study. The original papers by Seebeck, Peltier, and Thomson are readable in modern translation and remain, after 170 years, surprisingly clear.
+      </p>
+    </div>
+    
+    <div class="app-list fade-up">
+      <div class="app-row">
+        <div class="app-row__num">[1]</div>
+        <div class="app-row__title">Seebeck, T. J. (1823)</div>
+        <div class="app-row__desc">"Magnetische Polarisation der Metalle und Erze durch Temperatur-Differenz." Abhandlungen der Königlichen Akademie der Wissenschaften zu Berlin.</div>
+        <div class="app-row__tag">Primary</div>
+      </div>
+      <div class="app-row">
+        <div class="app-row__num">[2]</div>
+        <div class="app-row__title">Peltier, J. C. A. (1834)</div>
+        <div class="app-row__desc">"Nouvelles expériences sur la caloricité des courants électriques." Annales de Chimie et de Physique, 56, 371–386.</div>
+        <div class="app-row__tag">Primary</div>
+      </div>
+      <div class="app-row">
+        <div class="app-row__num">[3]</div>
+        <div class="app-row__title">Thomson, W. (1851)</div>
+        <div class="app-row__desc">"On a mechanical theory of thermo-electric currents." Proceedings of the Royal Society of Edinburgh, 3, 91–98.</div>
+        <div class="app-row__tag">Primary</div>
+      </div>
+      <div class="app-row">
+        <div class="app-row__num">[4]</div>
+        <div class="app-row__title">Goldsmid, H. J. (2010)</div>
+        <div class="app-row__desc"><em>Introduction to Thermoelectricity</em>. Springer Series in Materials Science, Vol. 121. The standard modern textbook.</div>
+        <div class="app-row__tag">Textbook</div>
+      </div>
+      <div class="app-row">
+        <div class="app-row__num">[5]</div>
+        <div class="app-row__title">Snyder, G. J. &amp; Toberer, E. S. (2008)</div>
+        <div class="app-row__desc">"Complex thermoelectric materials." Nature Materials, 7, 105–114. A widely-cited review of the figure-of-merit problem.</div>
+        <div class="app-row__tag">Review</div>
+      </div>
+      <div class="app-row">
+        <div class="app-row__num">[6]</div>
+        <div class="app-row__title">NASA Jet Propulsion Laboratory</div>
+        <div class="app-row__desc">Voyager mission status reports, 1977–present. Public telemetry data on RTG output decay. Available at voyager.jpl.nasa.gov.</div>
+        <div class="app-row__tag">Archive</div>
+      </div>
+      <div class="app-row">
+        <div class="app-row__num">[7]</div>
+        <div class="app-row__title">Rowe, D. M., ed. (2018)</div>
+        <div class="app-row__desc"><em>Thermoelectrics Handbook: Macro to Nano</em>. CRC Press. Comprehensive reference covering materials, theory, and applications.</div>
+        <div class="app-row__tag">Reference</div>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__brand">Thermo<span>·</span>electricity</div>
+      <p class="footer__tag">A school project on the direct conversion between heat and electricity. Written as a single long-form study in nine chapters.</p>
+    </div>
+    <div class="footer__col">
+      <h4>Chapters</h4>
+      <ul>
+        <li>§01 Definition</li>
+        <li>§02 Three Effects</li>
+        <li>§03 Materials</li>
+        <li>§04 Generators</li>
+        <li>§05 Applications</li>
+        <li>§06 Voyager</li>
+        <li>§07 Trade-offs</li>
+        <li>§08 Future</li>
+        <li>§09 References</li>
+      </ul>
+    </div>
+    <div class="footer__col">
+      <h4>Key Equations</h4>
+      <ul>
+        <li><span class="mono">V = S · ΔT</span></li>
+        <li><span class="mono">Q̇ = Π · I</span></li>
+        <li><span class="mono">Π = S · T</span></li>
+        <li><span class="mono">ZT = S²σT / κ</span></li>
+      </ul>
+    </div>
+    <div class="footer__col">
+      <h4>Key Materials</h4>
+      <ul>
+        <li><span class="mono">Bi₂Te₃</span> — room temp</li>
+        <li><span class="mono">PbTe</span> — mid temp</li>
+        <li><span class="mono">SiGe</span> — high temp</li>
+        <li><span class="mono">Half-Heusler</span> — industrial</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer__bottom">
+    <span>© School Project · Physics · Vol. I</span>
+    <span>Set in EB Garamond &amp; Inter</span>
+  </div>
+</footer>
+
+<script>
+/* ═══════════════ SMOOTH SCROLL (Lenis) ═══════════════ */
+const lenis = new Lenis({
+  duration: 1.2,
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  smoothWheel: true,
+});
+
+function raf(time) {
+  lenis.raf(time);
+  requestAnimationFrame(raf);
+}
+requestAnimationFrame(raf);
+
+/* ═══════════════ GSAP REGISTER ═══════════════ */
+gsap.registerPlugin(ScrollTrigger);
+
+lenis.on('scroll', ScrollTrigger.update);
+gsap.ticker.add((time) => lenis.raf(time * 1000));
+gsap.ticker.lagSmoothing(0);
+
+/* ═══════════════ HERO TIMELINE ═══════════════ */
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if (!reduced) {
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  
+  tl.to('.hero__image', { 
+      scale: 1, 
+      opacity: 1, 
+      filter: 'blur(0px) grayscale(0.5) brightness(0.55) sepia(0.15)', 
+      duration: 2.2 
+    }, 0)
+    .fromTo('#hero-eyebrow', 
+      { opacity: 0, y: -20 }, 
+      { opacity: 1, y: 0, duration: 0.6 }, 0.3)
+    .fromTo('#hero-title', 
+      { opacity: 0, y: 40 }, 
+      { opacity: 1, y: 0, duration: 1.2 }, 0.6)
+    .fromTo('#hero-sub', 
+      { opacity: 0, y: 20 }, 
+      { opacity: 1, y: 0, duration: 0.8 }, 1.0)
+    .fromTo('#hero-cta', 
+      { opacity: 0, y: 16 }, 
+      { opacity: 1, y: 0, duration: 0.7 }, 1.3)
+    .fromTo('#hero-corner', 
+      { opacity: 0 }, 
+      { opacity: 1, duration: 1.2 }, 1.5);
+} else {
+  // Reduced motion: just show everything
+  document.querySelector('.hero__image').style.opacity = '1';
+  document.querySelector('.hero__image').style.transform = 'scale(1)';
+  document.querySelector('.hero__image').style.filter = 'grayscale(0.5) brightness(0.55)';
+  ['#hero-eyebrow','#hero-title','#hero-sub','#hero-cta','#hero-corner'].forEach(s => {
+    const el = document.querySelector(s);
+    if (el) { el.style.opacity = '1'; el.style.transform = 'none'; }
+  });
+}
+
+/* ═══════════════ FADE-UP OBSERVER ═══════════════ */
+const fadeEls = document.querySelectorAll('.fade-up, [data-section]');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('is-in');
+      // Also mark parent section for eyebrow rule animation
+      const section = entry.target.closest('section');
+      if (section) section.classList.add('is-in');
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+fadeEls.forEach(el => io.observe(el));
+
+// Mark all sections for eyebrow rule
+document.querySelectorAll('section[data-section]').forEach(s => io.observe(s));
+
+/* ═══════════════ LIVE CLOCK IN NAV META ═══════════════ */
+function updateNavMeta() {
+  const navMeta = document.querySelector('.nav__meta');
+  if (!navMeta) return;
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  navMeta.textContent = `A School Project · Phys. Vol. I · ${h}:${m}`;
+}
+updateNavMeta();
+setInterval(updateNavMeta, 30000);
+
+/* ═══════════════ NAV LINK SMOOTH SCROLL ═══════════════ */
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+  link.addEventListener('click', (e) => {
+    const href = link.getAttribute('href');
+    if (href === '#' || href.length < 2) return;
+    const target = document.querySelector(href);
+    if (target) {
+      e.preventDefault();
+      lenis.scrollTo(target, { offset: -40, duration: 1.4 });
+    }
+  });
+});
+
+/* ═══════════════ REFRESH ON LOAD ═══════════════ */
+window.addEventListener('load', () => {
+  ScrollTrigger.refresh();
+});
+
+</script>
+
+</body>
+</html>
